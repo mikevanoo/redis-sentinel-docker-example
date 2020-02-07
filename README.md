@@ -13,6 +13,16 @@ with a few tests.
 
 1. Read [docker-compose.yml](./docker-compose.yml)
 1. Read [sentinel.conf](./sentinel.conf)
+
+### Starting
+1. Read [start.sh](./start.sh)
+1. Start Redis: `./start.sh`
+
+### Stopping
+1. Read [stop.sh](./stop.sh)
+1. Stop Redis: `./stop.sh`
+
+### Tests
 1. Read [test.sh](./test.sh)
 1. Run the tests: `./test.sh`:
 
@@ -23,7 +33,6 @@ with a few tests.
     New master: 172.22.1.20
     all 3 election works tests passed in 17.000s.
     ```
-
 ## Notes
 
 * `sentinel.conf` must be writeable and not shared between Sentinel instances. It constantly gets updated by the Sentinel process which writes IPs, ports, and other info to it.
