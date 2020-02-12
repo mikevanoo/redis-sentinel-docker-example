@@ -29,9 +29,6 @@ services:
     volumes:
       - ./.sentinel1.conf:/etc/sentinel.conf
     command: redis-server /etc/sentinel.conf --sentinel
-    environment:
-      - SENTINEL_NAME=mysentinel
-      - HOST_IP="127.0.0.1"
 
   redis_sentinel2:
     image: redis:5.0.7-alpine
@@ -41,9 +38,6 @@ services:
     volumes:
       - ./.sentinel2.conf:/etc/sentinel.conf
     command: redis-server /etc/sentinel.conf --sentinel
-    environment:
-      - SENTINEL_NAME=mysentinel
-      - HOST_IP="127.0.0.1"
 
   redis_sentinel3:
     image: redis:5.0.7-alpine
@@ -53,6 +47,3 @@ services:
     volumes:
       - ./.sentinel3.conf:/etc/sentinel.conf
     command: redis-server /etc/sentinel.conf --sentinel
-    environment:
-      - SENTINEL_NAME=mysentinel
-      - HOST_IP="127.0.0.1"
