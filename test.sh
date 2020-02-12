@@ -6,47 +6,29 @@ set -euo pipefail
 
 ./start.sh
 
-# variables
-declare -A servers=(
-  ['172.22.1.10']='redis1'
-  ['172.22.1.20']='redis2'
-  ['172.22.1.30']='redis3'
-)
-
 function set_vars () {
   MASTER_IP=$1
-  MASTER_NAME=${servers[$MASTER_IP]}
+  MASTER_NAME=redis1
   echo "Master: $MASTER_NAME at $MASTER_IP"
 
   SLAVE1_IP=
-  SLAVE1_NAME=
-  SLAVE2_IP=
-  SLAVE2_NAME=
+  SLAVE1_NAME=redis2
+  echo "Slave1: $SLAVE1_NAME at $SLAVE1_IP"
 
-  for key in "${!servers[@]}"; do
-    if [[ "$key" != "$MASTER_IP" ]]; then
-      if [[ -z "$SLAVE1_IP" ]]; then
-        SLAVE1_IP="$key"
-        SLAVE1_NAME="${servers[$key]}"
-        echo "Slave1: $SLAVE1_NAME at $SLAVE1_IP"
-      else
-        SLAVE2_IP="$key"
-        SLAVE2_NAME="${servers[$key]}"
-        echo "Slave2: $SLAVE2_NAME at $SLAVE2_IP"
-      fi
-    fi
-  done
+  SLAVE2_IP=
+  SLAVE2_NAME=redis3
+  echo "Slave2: $SLAVE2_NAME at $SLAVE2_IP"
 }
 
 # test suite 1
 
-set_vars $(docker exec -t redis-sentinel-docker-example_redis1_1 redis-cli -h 172.22.1.31 -p 26379 SENTINEL get-master-addr-by-name my_redis_master | cut -d\" -f2 | head -n1)
+set_vars $(docker exec -t redis_sentinel1 redis-cli -h 127.0.0.1 -p 26379 SENTINEL get-master-addr-by-name redis1 | cut -d\" -f2 | head -n2 | paste -d ":" - -)
 ## cannot write to replica
-assert "docker exec -t redis-sentinel-docker-example_${SLAVE1_NAME}_1 redis-cli set 'foo' 123" "(error) READONLY You can't write against a read only replica."
+assert "docker exec -t ${SLAVE1_NAME} redis-cli set 'foo' 123" "(error) READONLY You can't write against a read only replica."
 ## can write to master
-assert "docker exec -t redis-sentinel-docker-example_${MASTER_NAME}_1 redis-cli set 'foo' 123" "OK"
+assert "docker exec -t ${MASTER_NAME} redis-cli set 'foo' 123" "OK"
 ## can read from replica what got written to master
-assert "docker exec -t redis-sentinel-docker-example_${SLAVE2_NAME}_1 redis-cli get 'foo'" "\"123\""
+assert "docker exec -t ${SLAVE2_NAME} redis-cli get 'foo'" "\"123\""
 
 assert_end only write to master
 echo
@@ -57,14 +39,14 @@ echo
 docker-compose stop $MASTER_NAME && sleep 20
 echo
 
-set_vars $(docker exec -t redis-sentinel-docker-example_${SLAVE2_NAME}_1 redis-cli -h 172.22.1.21 -p 26379 SENTINEL get-master-addr-by-name my_redis_master | cut -d\" -f2 | head -n1)
+set_vars $(docker exec -t ${SLAVE2_NAME} redis-cli -h 127.0.0.1 -p 26380 SENTINEL get-master-addr-by-name redis1 | cut -d\" -f2 | head -n1)
 
 ## can write to master
-assert "docker exec -t redis-sentinel-docker-example_${MASTER_NAME}_1 redis-cli set 'foo' 345" "OK"
+assert "docker exec -t ${MASTER_NAME} redis-cli set 'foo' 345" "OK"
 ## can read what got written
-assert "docker exec -t redis-sentinel-docker-example_${MASTER_NAME}_1 redis-cli get 'foo'" "\"345\""
+assert "docker exec -t ${MASTER_NAME} redis-cli get 'foo'" "\"345\""
 ## can read what got written
-assert "docker exec -t redis-sentinel-docker-example_${SLAVE2_NAME}_1 redis-cli get 'foo'" "\"345\""
+assert "docker exec -t ${SLAVE2_NAME} redis-cli get 'foo'" "\"345\""
 
 assert_end election works
 

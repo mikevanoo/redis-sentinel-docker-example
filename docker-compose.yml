@@ -1,67 +1,58 @@
-version: '2.1'
+version: '3.0'
 services:
 
   redis1:
     image: redis:5.0.7-alpine
-    expose:
-      - 6379
-    networks:
-      foonet:
-        ipv4_address: 172.22.1.10
-
-  sentinel1:
-    image: redis:5.0.7-alpine
-    expose:
-      - 26379
-    volumes:
-      - ./.sentinel1.conf:/etc/sentinel.conf
-    command: redis-server /etc/sentinel.conf --sentinel
-    networks:
-      foonet:
-        ipv4_address: 172.22.1.11
+    container_name: redis1
+    ports:
+      - '6379:6379'
 
   redis2:
     image: redis:5.0.7-alpine
-    expose:
-      - 6379
-    networks:
-      foonet:
-        ipv4_address: 172.22.1.20
-
-  sentinel2:
-    image: redis:5.0.7-alpine
-    expose:
-      - 26379
-    volumes:
-      - ./.sentinel2.conf:/etc/sentinel.conf
-    command: redis-server /etc/sentinel.conf --sentinel
-    networks:
-      foonet:
-        ipv4_address: 172.22.1.21
+    container_name: redis2
+    command: redis-server --port 6380
+    ports:
+      - '6380:6380'
 
   redis3:
     image: redis:5.0.7-alpine
-    expose:
-      - 6379
-    networks:
-      foonet:
-        ipv4_address: 172.22.1.30
+    container_name: redis3
+    command: redis-server --port 6381
+    ports:
+      - '6381:6381'
 
-  sentinel3:
+  redis_sentinel1:
     image: redis:5.0.7-alpine
-    expose:
-      - 26379
+    container_name: redis_sentinel1
+    ports:
+      - '26379:26379'  
+    volumes:
+      - ./.sentinel1.conf:/etc/sentinel.conf
+    command: redis-server /etc/sentinel.conf --sentinel
+    environment:
+      - SENTINEL_NAME=mysentinel
+      - HOST_IP="127.0.0.1"
+
+  redis_sentinel2:
+    image: redis:5.0.7-alpine
+    container_name: redis_sentinel2
+    ports:
+      - '26380:26380'
+    volumes:
+      - ./.sentinel2.conf:/etc/sentinel.conf
+    command: redis-server /etc/sentinel.conf --sentinel
+    environment:
+      - SENTINEL_NAME=mysentinel
+      - HOST_IP="127.0.0.1"
+
+  redis_sentinel3:
+    image: redis:5.0.7-alpine
+    container_name: redis_sentinel3
+    ports:
+      - '26381:26381'
     volumes:
       - ./.sentinel3.conf:/etc/sentinel.conf
     command: redis-server /etc/sentinel.conf --sentinel
-    networks:
-      foonet:
-        ipv4_address: 172.22.1.31
-
-networks:
-  foonet:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.22.1.0/24
+    environment:
+      - SENTINEL_NAME=mysentinel
+      - HOST_IP="127.0.0.1"
