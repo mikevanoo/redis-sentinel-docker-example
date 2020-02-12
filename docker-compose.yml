@@ -4,12 +4,14 @@ services:
   redis1:
     image: redis:5.0.7-alpine
     container_name: redis1
+    hostname: redis1
     ports:
       - '6379:6379'
 
   redis2:
     image: redis:5.0.7-alpine
     container_name: redis2
+    hostname: redis2
     command: redis-server --port 6380
     ports:
       - '6380:6380'
@@ -17,6 +19,7 @@ services:
   redis3:
     image: redis:5.0.7-alpine
     container_name: redis3
+    hostname: redis3
     command: redis-server --port 6381
     ports:
       - '6381:6381'
@@ -24,26 +27,46 @@ services:
   redis_sentinel1:
     image: redis:5.0.7-alpine
     container_name: redis_sentinel1
+    hostname: redis_sentinel1
     ports:
       - '26379:26379'  
     volumes:
       - ./.sentinel1.conf:/etc/sentinel.conf
     command: redis-server /etc/sentinel.conf --sentinel
+    environment:
+      - SENTINEL_NAME=mysentinel
 
   redis_sentinel2:
     image: redis:5.0.7-alpine
     container_name: redis_sentinel2
+    hostname: redis_sentinel2
     ports:
       - '26380:26380'
     volumes:
       - ./.sentinel2.conf:/etc/sentinel.conf
     command: redis-server /etc/sentinel.conf --sentinel
+    environment:
+      - SENTINEL_NAME=mysentinel
 
   redis_sentinel3:
     image: redis:5.0.7-alpine
     container_name: redis_sentinel3
+    hostname: redis_sentinel3
     ports:
       - '26381:26381'
     volumes:
       - ./.sentinel3.conf:/etc/sentinel.conf
     command: redis-server /etc/sentinel.conf --sentinel
+    environment:
+      - SENTINEL_NAME=mysentinel
+
+  redis-commander:
+    container_name: redis-commander
+    hostname: redis-commander
+    image: rediscommander/redis-commander:latest
+    restart: always
+    environment:
+      - SENTINELS=redis_sentinel1:26379,redis_sentinel2:26380,redis_sentinel3:26381
+      - SENTINEL_NAME=redis1
+    ports:
+      - "8081:8081"

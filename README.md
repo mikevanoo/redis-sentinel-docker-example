@@ -18,11 +18,14 @@ with a few tests.
 1. Read [start.sh](./start.sh)
 1. Start Redis: `./start.sh`
 
+### Redis Commander
+1. Launch browser at http://localhost:8081/
+
 ### Stopping
 1. Read [stop.sh](./stop.sh)
 1. Stop Redis: `./stop.sh`
 
-### Tests
+### Tests (currently broken - see commit 9675cb7276c21c9b24db17bc1386713d27344685)
 1. Read [test.sh](./test.sh)
 1. Run the tests: `./test.sh`:
 
